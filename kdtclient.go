@@ -111,3 +111,36 @@ func (r *Response) Json(v interface{}) error {
 	}
 	return nil
 }
+
+type Body struct {
+	ErrorResponse struct {
+		Code   float64                `json:"code"`
+		Msg    string                 `json:"msg"`
+		Params map[string]interface{} `json:"params"`
+	} `json:"error_response"`
+}
+
+func (body *Body) HasError() bool {
+	return body.ErrorResponse.Code != 0
+}
+
+type SubCategories struct {
+	Cid           float64        `json:"cid"`
+	ParentCode    float64        `json:"parent_cid"`
+	Name          string         `json:name`
+	IsParent      bool           `json:"is_parent"`
+	SubCategories *SubCategories `json:"sub_categories"`
+}
+
+type ItemCategories struct {
+	Body
+	Response struct {
+		Categories []struct {
+			Cid           float64          `json:"cid"`
+			IsParent      bool             `json:"is_parent"`
+			Name          string           `json:"name"`
+			ParentCid     float64          `json:"parent_cid"`
+			SubCategories []*SubCategories `json:"sub_categories"`
+		} `json:"categories"`
+	} `json:"response"`
+}

@@ -20,7 +20,7 @@ type Sdk struct {
 }
 
 type parameters struct {
-	params    map[string]string
+	params    map[string]interface{}
 	urlValues url.Values
 }
 
@@ -37,11 +37,11 @@ func NewSdk(url string, appId string, secret string) *Sdk {
 	return sdk
 }
 
-func (sdk *Sdk) SendRequest(method string, params ...map[string]string) (*Response, error) {
+func (sdk *Sdk) SendRequest(method string, params ...map[string]interface{}) (*Response, error) {
 	p := new(parameters)
 	p.urlValues = url.Values{}
 
-	p.params = map[string]string{
+	p.params = map[string]interface{}{
 		"app_id":      sdk.AppId,
 		"method":      method,
 		"timestamp":   NowString(),
@@ -63,7 +63,7 @@ func (sdk *Sdk) SendRequest(method string, params ...map[string]string) (*Respon
 	p.params["sign"] = fmt.Sprintf("%x", h.Sum(nil))
 
 	for key, value := range p.params {
-		p.urlValues.Set(key, value)
+		p.urlValues.Add(key, fmt.Sprintf("%v", value))
 	}
 
 	resp, err := http.PostForm(fmt.Sprintf("%s?%s", sdk.BaseUrl, p.urlValues.Encode()), p.urlValues)
@@ -91,7 +91,6 @@ func (r *Response) Content() ([]byte, error) {
 	}
 	defer r.Resp.Body.Close()
 	data, err := ioutil.ReadAll(r.Resp.Body)
-	fmt.Println(string(data))
 	if err != nil {
 		return nil, err
 	}
@@ -123,24 +122,7 @@ type Body struct {
 func (body *Body) HasError() bool {
 	return body.ErrorResponse.Code != 0
 }
-
-type SubCategories struct {
-	Cid           float64        `json:"cid"`
-	ParentCode    float64        `json:"parent_cid"`
-	Name          string         `json:name`
-	IsParent      bool           `json:"is_parent"`
-	SubCategories *SubCategories `json:"sub_categories"`
-}
-
-type ItemCategories struct {
-	Body
-	Response struct {
-		Categories []struct {
-			Cid           float64          `json:"cid"`
-			IsParent      bool             `json:"is_parent"`
-			Name          string           `json:"name"`
-			ParentCid     float64          `json:"parent_cid"`
-			SubCategories []*SubCategories `json:"sub_categories"`
-		} `json:"categories"`
-	} `json:"response"`
+func (b *Body) ErrorMessage() string {
+	s, _ := json.Marshal(b.ErrorResponse.Params)
+	return fmt.Sprintf("Code: %.0f, Msg: %s, Params: %s", b.ErrorResponse.Code, b.ErrorResponse.Msg, s)
 }

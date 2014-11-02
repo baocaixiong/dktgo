@@ -19,12 +19,12 @@ func TodayEndString() string {
 }
 
 type signMap struct {
-	noSort     map[string]string
+	noSort     map[string]interface{}
 	sortedKeys []string
 	isSorted   bool
 }
 
-func NewSign(_map map[string]string) *signMap {
+func NewSign(_map map[string]interface{}) *signMap {
 	return &signMap{
 		noSort:     _map,
 		sortedKeys: make([]string, 0, len(_map)),
@@ -61,7 +61,7 @@ func (sm *signMap) ToString(separator ...string) string {
 	}
 
 	for _, k := range sm.sortedKeys {
-		ret += fmt.Sprintf("%s"+_separator+"%s", k, sm.noSort[k])
+		ret += fmt.Sprintf("%s"+_separator+"%v", k, sm.noSort[k])
 	}
 
 	return ret

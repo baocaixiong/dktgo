@@ -20,7 +20,7 @@ type TradeMemoUpdate TradeDetail
 
 //查询卖家已卖出的交易列表
 type TradesSold struct {
-	Body
+	kdtgo.Body
 	Response struct {
 		TotalResults float64 `json:"total_results"`
 		Trades       []Trade `json:"trades"`
